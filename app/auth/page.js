@@ -14,10 +14,17 @@ export default function AuthPage() {
     e.preventDefault();
     if (!supabase) return setMsg('Supabase env vars not configured.');
     setMsg('');
-    const fn = mode === 'signup' ? supabase.auth.signUp : supabase.auth.signInWithPassword;
-    const { error } = await fn({ email, password });
-    if (error) return setMsg(error.message);
-    router.push('/journal');
+
+    try {
+      const { error } = mode === 'signup'
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) return setMsg(error.message);
+      router.push('/journal');
+    } catch (err) {
+      setMsg(err?.message || 'Authentication failed.');
+    }
   };
 
   return (
